@@ -8,3 +8,9 @@
   * utils.h:一些帮助函数
   * json.hpp:c++ 读取json 库
   * Makefile:make,make clean
+* 步骤
+  1. 模型解析
+  2. 模型读取
+  3. 模型编写-cuda
+  4. 测试
+  5. 优化
