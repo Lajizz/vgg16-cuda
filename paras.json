@@ -1,0 +1,309 @@
+{
+    "0":{
+        "name": "Conv_0",
+        "type": "Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "input_shape":[1,3,244,244],
+        "weight_shape":[64,3,3,3],
+        "weight": "features_0_weight.npy",
+        "bias_shape":64,
+        "bias" : "features_0_bias.npy"
+    },
+    "1":{
+        "name":"Relu_1",
+        "type":"Relu"        
+    },
+    "2":{
+        "name":"Conv_2",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[64,64,3,3],
+        "weight": "features_2_weight.npy",
+        "bias_shape":64,
+        "bias" : "features_2_bias.npy"
+    },
+    "3":{
+        "name":"Relu_3",
+        "type":"Relu"
+    },
+    "4":{
+        "name":"MaxPool_4",
+        "type":"MaxPool",
+        "kernel_shape":[2,2],
+        "pads":[0,0,0,0],
+        "strides":[2,2]
+    },
+    "5":{
+        "name":"Conv_5",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[128,64,3,3],
+        "weight": "features_5_weight.npy",
+        "bias_shape":128,
+        "bias" : "features_5_bias.npy"
+    },
+    "6":{
+        "name":"Relu_6",
+        "type":"Relu"
+    },
+    "7":{
+        "name":"Conv_7",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[128,128,3,3],
+        "weight": "features_7_weight.npy",
+        "bias_shape":128,
+        "bias" : "features_7_bias.npy"
+    },
+    "8":{
+        "name":"Relu_8",
+        "type":"Relu"
+    },
+    "9":{
+        "name":"MaxPool_9",
+        "type":"MaxPool",
+
+        "kernel_shape":[2,2],
+        "pads":[0,0,0,0],
+        "strides":[2,2]
+    },
+    "10":{
+        "name":"Conv_10",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[256,128,3,3],
+        "weight": "features_10_weight.npy",
+        "bias_shape":256,
+        "bias" : "features_10_bias.npy"
+    },
+    "11":{
+        "name":"Relu_11",
+        "type":"Relu"
+    },
+    "12":{
+        "name":"Conv_12",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[256,256,3,3],
+        "weight": "features_12_weight.npy",
+        "bias_shape":256,
+        "bias" : "features_12_bias.npy"
+    },
+    "13":{
+        "name":"Relu_13",
+        "type":"Relu"
+    },
+    "14":{
+        "name":"Conv_14",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[256,256,3,3],
+        "weight": "features_14_weight.npy",
+        "bias_shape":256,
+        "bias" : "features_14_bias.npy"
+    },
+    "15":{
+        "name":"Relu_15",
+        "type":"Relu"
+    },
+    "16":{
+        "name":"MaxPool_16",
+        "type":"MaxPool",
+        "kernel_shape":[2,2],
+        "pads":[0,0,0,0],
+        "strides":[2,2]
+    },
+    "17":{
+        "name":"Conv_17",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[512,256,3,3],
+        "weight": "features_17_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_17_bias.npy"
+    },
+    "18":{
+        "name":"Relu_18",
+        "type":"Relu"
+    },
+    "19":{
+        "name":"Conv_19",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[512,512,3,3],
+        "weight": "features_19_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_19_bias.npy"
+    },
+    "20":{
+        "name":"Relu_20",
+        "type":"Relu"
+    },
+    "21":{
+        "name":"Conv_21",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[512,512,3,3],
+        "weight": "features_21_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_21_bias.npy"
+    },
+    "22":{
+        "name":"Relu_22",
+        "type":"Relu"
+    },
+    "23":{
+        "name":"MaxPool_23",
+        "type":"MaxPool",
+        "kernel_shape":[2,2],
+        "pads":[0,0,0,0],
+        "strides":[2,2]
+    },
+    "24":{
+        "name":"Conv_24",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[512,512,3,3],
+        "weight": "features_24_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_24_bias.npy"
+    },
+    "25":{
+        "name":"Relu_25",
+        "type":"Relu"
+    },
+    "26":{
+        "name":"Conv_26",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],
+        "weight_shape":[512,512,3,3],
+        "weight": "features_26_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_26_bias.npy"
+    },
+    "27":{
+        "name":"Relu_27",
+        "type":"Relu"
+    },
+    "28":{
+        "name":"Conv_28",
+        "type":"Conv",
+        "dilations":[1,1],
+        "group":1,
+        "kernel_shape":[3,3],
+        "pads":[1,1,1,1],
+        "strides":[1,1],     
+        "weight_shape":[512,512,3,3],
+        "weight": "features_28_weight.npy",
+        "bias_shape":512,
+        "bias" : "features_28_bias.npy"
+    },
+    "29":{
+        "name":"Relu_29",
+        "type":"Relu"
+    },
+    "30":{
+        "name":"MaxPool_30",
+        "type":"MaxPool",
+        "kernel_shape":[2,2],
+        "pads":[0,0,0,0],
+        "strides":[2,2]
+    },
+    "31":{
+        "name":"AveragePool_31",
+        "type":"AveragePool"
+    },
+    "32":{
+        "name":"Flatten_32",
+        "type":"Flatten"
+    },
+    "33":{
+        "name":"Gemm_33",
+        "type":"Gemm",
+        "alpha":1,
+        "beta":1,
+        "transB":1,
+        "weight_shape":[4096,25088],
+        "weight": "classifier_0_weight.npy",
+        "bias_shape":4096,
+        "bias" : "classifier_0_bias.npy"
+    },
+    "34":{
+        "name":"Relu_34",
+        "type":"Relu"
+    },
+    "35":{
+        "name":"Gemm_35",
+        "type":"Gemm",
+        "alpha":1,
+        "beta":1,
+        "transB":1,
+        "weight_shape":[4096,4096],
+        "weight": "classifier_3_weight.npy",
+        "bias_shape":4096,
+        "bias" : "classifier_3_bias.npy"
+    },
+    "36":{
+        "name":"Relu_36",
+        "type":"Relu"
+    },
+    "37":{
+        "name":"Gemm_37",
+        "type":"Gemm",
+        "alpha":1,
+        "beta":1,
+        "transB":1,
+        "weight_shape":[1000,4096],
+        "weight": "classifier_6_weight.npy",
+        "bias_shape":1000,
+        "bias" : "classifier_6_bias.npy"
+    }
+}
