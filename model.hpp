@@ -1,5 +1,9 @@
+/*
+ * @File: model.hpp
+ * @Author: group3
+ */
 #include "utils.h"
-/* basic infomation */
+/* basic layer infomation */
 struct Layerinfo{
     std::string type;
     std::string name;
@@ -8,10 +12,7 @@ struct Layerinfo{
 /* convolution layer with relu */
 struct ConvConf
 {
-    /* layer infomation */
-    Layerinfo info;
-
-    /* attrubutes */
+   /* attrubutes */
     std::vector<int> dilations;
     unsigned int group;
     std::vector<int> kernel_shape;
@@ -35,9 +36,6 @@ struct ConvConf
 /* MaxPool layer */
 struct MaxPoolConf
 {
-    /* layer information */
-    // Layerinfo info;
-
     /* attributes */
     std::vector<int> kernel_shape;
     std::vector<int> pads;
@@ -53,9 +51,6 @@ struct MaxPoolConf
 };
 
 struct GemmConf{
-    /* layer information */
-    // Layerinfo info;
-
     /* attributes */
     unsigned alpha;
     unsigned beta;
@@ -78,8 +73,10 @@ struct GemmConf{
 /* parent class */
 class layer {
     public:
+        /* basic info */
         Layerinfo info;
         layer(std::string,std::string);
+        /* print parameters of layer */
         void print_message();
         virtual ~layer() = default;
         
@@ -87,25 +84,34 @@ class layer {
 
 class convolution :public layer{
     public:
+        /* the parememter of convolution */
         ConvConf conf;
         convolution(std::string name,std::string type):layer(name,type){};
+        /* print parameters of layer */
         void print_message();
+        /* free the space of CPU and GPU */
         ~convolution();
 };
 
 class maxpool :public layer{
     public:
+        /* the parememter of maxpool */
         MaxPoolConf conf;
         maxpool(std::string name,std::string type):layer(name,type){};
+        /* print parameters of layer */
         void print_message();
+        /* free the space of CPU and GPU */
         ~maxpool();
 };
 
 class gemm :public layer{
     public:
+        /* the parememter of gemm */
         GemmConf conf;
         gemm(std::string name,std::string type):layer(name,type){};
+        /* print parameters of layer */
         void print_message();
+        /* free the space of CPU and GPU */
         ~gemm();
 };
 
@@ -113,14 +119,21 @@ class gemm :public layer{
 /* the whole model*/
 class VGG16{
     public:
+        /* input of model */
         std::vector<int> input_shape;
         float* input;
+        /* output of model */
         std::vector<int> output_shape;
         float* output;
+        /* layers of this model */
         std::vector<layer *> paras;
+        /* construction function for vgg16 model */
         VGG16(std::string, std::string);
+        /* print parameters of model,it will invoke the print_message of every layer */
         void print_message();
+        /* the function for forward inference*/
         void inference(float* in, float* out);
+        /* free the space of CPU and GPU */
         ~VGG16();
 };
 
@@ -154,6 +167,7 @@ void convolution::print_message(){
     
 }
 
+/* deconstruct function */
 convolution::~convolution(){
     cudaFree(conf.input);
     cudaFree(conf.output);
@@ -172,6 +186,7 @@ void maxpool::print_message(){
     std::cout<<"\n";
 }
 
+/* deconstruct function */
 maxpool::~maxpool(){
     cudaFree(conf.input);
     cudaFree(conf.output);
@@ -192,6 +207,7 @@ void gemm::print_message(){
     std::cout<<"bias shape: "<<conf.bias_shape<<"\n";
 }
 
+/* deconstruct function */
 gemm::~gemm(){
     cudaFree(conf.input);
     cudaFree(conf.output);
@@ -199,12 +215,15 @@ gemm::~gemm(){
     cudaFree(conf.bias);
 }
 
-//load parameter and copy to global
+/* load parameter and copy to global memory */
 VGG16::VGG16(std::string config, std::string paras_dir){
     std::cout << "start to load paras:" << std::endl;
+    /* read paras.json from local file */
     json para;
     std::ifstream in(config);
     in >> para;
+
+    /* set up the gpu */
     cudaError_t cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess)
     {
@@ -212,22 +231,25 @@ VGG16::VGG16(std::string config, std::string paras_dir){
         exit(EXIT_FAILURE);
     }
 
+    /* init the input_shape and the output_shape of this model */
     input_shape.push_back(1);
     input_shape.push_back(3);
     input_shape.push_back(244);
     input_shape.push_back(244);
     output_shape.push_back(1);
     output_shape.push_back(1000);
-
-
-    std::vector<int> data_in(input_shape);
+    
+    /* record the output_shape of last layer*/
     std::vector<int> data_out(input_shape);
+
+    /* construct the whole model, read every layer*/
     for (int i = 0; i < 38; i++)
     {
         std::string index = std::to_string(i);
         std::string name = para[index]["name"];
         std::string type = para[index]["type"];
         
+        /* construct convolution config */
         if(type == "Conv"){
             convolution* l = new convolution(name, type);
             // attributes
@@ -240,7 +262,8 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.pads = pads;
             std::vector<int> strides = para[index]["strides"];
             l->conf.strides = strides;
-            // weight and bias
+
+            // weight and bias,read weight and bias from local file
             std::vector<int> weight_shape = para[index]["weight_shape"];
             l->conf.weight_shape = weight_shape;
             l->conf.bias_shape =para[index]["bias_shape"];
@@ -259,13 +282,12 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             j.read((char *)src_bias, bs * sizeof(float));
             j.close();
 
-            // printf("%f %f %f\n",src_weight[0],src_weight[1],src_weight[2]);
             l->conf.weight = copytogpu(src_weight, l->conf.weight, ws);
             l->conf.bias = copytogpu(src_bias, l->conf.bias, bs);
             delete []src_weight;
             delete []src_bias;
 
-            //input and output
+            // input and output, save the input_shape, malloc space for input and output, calculate the output_shape 
             l->conf.input_shape = data_out;
             data_out[1] = l->conf.weight_shape[0];
             l->conf.input = gpumalloc(l->conf.input,vector_multi(l->conf.input_shape));
@@ -273,7 +295,8 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.output = gpumalloc(l->conf.output,vector_multi(l->conf.output_shape));
             
             paras.push_back((layer *)l);
-        }else if(type == "MaxPool"){
+        }/* construct convolution config */
+        else if(type == "MaxPool"){
             maxpool *l = new maxpool(name, type);
             // attribute
             std::vector<int> kernel_shape = para[index]["kernel_shape"];
@@ -282,7 +305,7 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.pads = pads;
             std::vector<int> strides = para[index]["strides"];
             l->conf.strides = strides;
-            // input and output
+            // input and output, save the input_shape, malloc space for input and output, calculate the output_shape 
             l->conf.input_shape = data_out;
             data_out[2] /= 2;
             data_out[3] /= 2;
@@ -291,13 +314,15 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.output = gpumalloc(l->conf.output,vector_multi(l->conf.output_shape));
 
             paras.push_back((layer *)l);
-        }else if(type == "Gemm"){
+        }/* construct gemm config */
+        else if(type == "Gemm"){
             gemm * l = new gemm(name, type);
             // attributes
             l->conf.alpha = para[index]["alpha"];
             l->conf.beta = para[index]["beta"];
             l->conf.transB = para[index]["transB"];
-            // weight and bias
+            
+            // weight and bias,read weight and bias from local file
             std::vector<int> weight_shape = para[index]["weight_shape"];
             l->conf.weight_shape = weight_shape;
             l->conf.bias_shape = para[index]["bias_shape"];
@@ -320,7 +345,7 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.bias = copytogpu(src_bias, l->conf.bias, bs);
             delete []src_weight;
             delete []src_bias;
-            // input and output
+            // input and output, save the input_shape, malloc space for input and output, calculate the output_shape 
             l->conf.input_shape = data_out;
             data_out[0] = l->conf.bias_shape;
             l->conf.input = gpumalloc(l->conf.input,vector_multi(l->conf.input_shape));
@@ -328,6 +353,8 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             l->conf.output = gpumalloc(l->conf.output,vector_multi(l->conf.output_shape));
             paras.push_back((layer *)l);
         }else if(type == "Flatten"){
+
+            //save the input_shape,calculate the output_shape 
             std::vector<int> v(2,1);
             v[0] = vector_multi(data_out);
             data_out = v;
@@ -342,6 +369,7 @@ VGG16::VGG16(std::string config, std::string paras_dir){
               << "load paras finished" << std::endl;
 }
 
+/* print information of the model */
 void VGG16::print_message(){
     for(auto ly:paras){        
         if(ly->info.type == "Conv"){
@@ -359,19 +387,21 @@ void VGG16::print_message(){
     }
 }
 
+
+/* implement of the function for forward inference*/
 void VGG16::inference(float* in, float* out){
     input = copytogpu(in, input, vector_multi(input_shape));
+
+    /* record the output of last layer, initially it is set the input */
     float * last_out = input;
     for(auto ly:paras){     
-        // if(ly->info.name == "Conv_5"){
-        //     break;
-        // }
+
         if(ly->info.type == "Conv"){
             convolution *l = dynamic_cast<convolution*>(ly);
             int dim1 = l->conf.weight_shape[0];
             int dim2 = 1024;
             int dim3 = vector_multi(l->conf.weight_shape) / dim1;
-            // printf("%d %d %d %d %d %d\n", dim1, dim2, dim3, l->conf.input_shape[1], l->conf.input_shape[2], l->conf.input_shape[3]);
+            //invoke Conv, dim1 is the number of convolution kernel, dim2 is 1024, dim3 is the size of convolution kernel
             Conv<<<dim1, dim2, dim3 * sizeof(float)>>>(last_out, l->conf.output, l->conf.weight, l->conf.bias, l->conf.input_shape[1], l->conf.input_shape[2], l->conf.input_shape[3]);
             cudaDeviceSynchronize();
             last_out = l->conf.output;
@@ -380,8 +410,7 @@ void VGG16::inference(float* in, float* out){
             maxpool *l = dynamic_cast<maxpool*>(ly);
             int dim1 = l->conf.input_shape[1];
             int dim2 = 1024;
-            // printf("Maxpool:%d %d\n",dim1,dim2);
-            // printf("Maxpool paras:%d %d\n",l->conf.output_shape[2],l->conf.output_shape[3]);
+            //invoke MaxPool, dim1 is the number of feature maps, dim2 is 1024
             MaxPool<<<dim1, dim2>>>(last_out, l->conf.output,l->conf.input_shape[2], l->conf.input_shape[3],l->conf.output_shape[2], l->conf.output_shape[3]);
             cudaDeviceSynchronize();
             last_out = l->conf.output;
@@ -403,6 +432,7 @@ void VGG16::inference(float* in, float* out){
     output = out;
 }
 
+/* free the space malloced in CPU and GPU */
 VGG16::~VGG16(){
     cudaFree(input);
     cudaFree(output);
