@@ -147,6 +147,10 @@ void convolution::print_message(){
     std::cout<<"output shape: ";
     vector_printf(conf.output_shape);
     std::cout<<"\n";
+    std::cout<<"weight shape: ";
+    vector_printf(conf.weight_shape);
+    std::cout<<"\n";
+    std::cout<<"bias shape: "<<conf.bias_shape<<"\n";
     
 }
 
@@ -182,6 +186,10 @@ void gemm::print_message(){
     std::cout<<"output shape: ";
     vector_printf(conf.output_shape);
     std::cout<<"\n";
+    std::cout<<"weight shape: ";
+    vector_printf(conf.weight_shape);
+    std::cout<<"\n";
+    std::cout<<"bias shape: "<<conf.bias_shape<<"\n";
 }
 
 gemm::~gemm(){
@@ -251,6 +259,7 @@ VGG16::VGG16(std::string config, std::string paras_dir){
             j.read((char *)src_bias, bs * sizeof(float));
             j.close();
 
+            // printf("%f %f %f\n",src_weight[0],src_weight[1],src_weight[2]);
             l->conf.weight = copytogpu(src_weight, l->conf.weight, ws);
             l->conf.bias = copytogpu(src_bias, l->conf.bias, bs);
             delete []src_weight;
@@ -353,36 +362,50 @@ void VGG16::print_message(){
 void VGG16::inference(float* in, float* out){
     input = copytogpu(in, input, vector_multi(input_shape));
     float * last_out = input;
-    for(auto ly:paras){        
+    for(auto ly:paras){     
+        // if(ly->info.name == "Conv_5"){
+        //     break;
+        // }
         if(ly->info.type == "Conv"){
             convolution *l = dynamic_cast<convolution*>(ly);
-            int dim1 = l->conf.kernel_shape[0];
+            int dim1 = l->conf.weight_shape[0];
             int dim2 = 1024;
-            int dim3 = vector_multi(l->conf.kernel_shape) / dim1;
-            Conv<<<dim1, dim2, dim3>>>(last_out, l->conf.output, l->conf.weight, l->conf.bias, l->conf.input_shape[1], l->conf.input_shape[2], l->conf.input_shape[3]);
+            int dim3 = vector_multi(l->conf.weight_shape) / dim1;
+            // printf("%d %d %d %d %d %d\n", dim1, dim2, dim3, l->conf.input_shape[1], l->conf.input_shape[2], l->conf.input_shape[3]);
+            Conv<<<dim1, dim2, dim3 * sizeof(float)>>>(last_out, l->conf.output, l->conf.weight, l->conf.bias, l->conf.input_shape[1], l->conf.input_shape[2], l->conf.input_shape[3]);
             cudaDeviceSynchronize();
             last_out = l->conf.output;
+  
         }else if(ly->info.type == "MaxPool"){
             maxpool *l = dynamic_cast<maxpool*>(ly);
             int dim1 = l->conf.input_shape[1];
             int dim2 = 1024;
-            MaxPool<<<dim1, dim2>>>(last_out, l->conf.output, l->conf.input_shape[1], l->conf.input_shape[2]);
+            // printf("Maxpool:%d %d\n",dim1,dim2);
+            // printf("Maxpool paras:%d %d\n",l->conf.output_shape[2],l->conf.output_shape[3]);
+            MaxPool<<<dim1, dim2>>>(last_out, l->conf.output,l->conf.input_shape[2], l->conf.input_shape[3],l->conf.output_shape[2], l->conf.output_shape[3]);
             cudaDeviceSynchronize();
             last_out = l->conf.output;
+            
         }else if(ly->info.type == "Gemm"){
             gemm *l = dynamic_cast<gemm*>(ly);
-            Gemm<<<8, 1024>>>(l->conf.weight, last_out, l->conf.bias, l->conf.output, l->conf.weight_shape[0], l->conf.weight_shape[1], l->conf.input_shape[1]);
-            cudaDeviceSynchronize();
+            if(ly->info.name == "Gemm_37"){
+                Gemm1<<<8, 1024>>>(l->conf.weight, last_out, l->conf.bias, l->conf.output, l->conf.weight_shape[0], l->conf.weight_shape[1], l->conf.input_shape[1]);
+                cudaDeviceSynchronize();
+            }else{
+                Gemm2<<<8, 1024>>>(l->conf.weight, last_out, l->conf.bias, l->conf.output, l->conf.weight_shape[0], l->conf.weight_shape[1], l->conf.input_shape[1]);
+                cudaDeviceSynchronize();
+            }
+           
             last_out = l->conf.output;
         }
     }
-    copyfromgpu(last_out, out, vector_multi(output_shape));
+    copyfromgpu(last_out, out, 1000);
     output = out;
 }
 
 VGG16::~VGG16(){
-    delete []input;
-    delete []output;
+    cudaFree(input);
+    cudaFree(output);
     for(int i = 0; i < paras.size();i++){
         delete paras[i];
     }

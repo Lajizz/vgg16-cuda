@@ -45,13 +45,16 @@ void checkOutput(float *out1, float *out2)
 }
 
 // TODO: 读取权重
+VGG16* model;
 void initModel(){
-    VGG16 model("./paras.json","../../model/parasbin");
-    model.print_message();
+    model = new VGG16("./paras.json","../model/parasbin/");
+    // model->print_message();
 };
 
 // TODO: 实现自己的inference
-void inference(float *input, float *output){};
+void inference(float *input, float *output){
+    model->inference(input,output);
+};
 
 
 int main()
@@ -59,31 +62,38 @@ int main()
 
     initModel(); // 读取网络权重
 
-    // readInput("./vgg16Input.txt");   // 读取输入
-    // readOutput("./vgg16Output.txt"); // 读取标准输出
+    readInput("../../models/vgg16Input.txt");   // 读取输入
+    readOutput("../../models/vgg16Output.txt"); // 读取标准输出
     float sumTime = 0;
-    // for (int i = 0; i < TESTNUM; i++)
-    // {
-    //     float inferOut[1000];
-    //     for (int j = 0; j < ITERNUM; j++)
-    //     {
-    //         float Onetime;
-    //         cudaEvent_t start, stop;
-    //         cudaEventCreate(&start);
-    //         cudaEventCreate(&stop);
-    //         cudaEventRecord(start, 0);
+    float inferOut[1000];
+    // printf("inputArr[0]:%f\n",inputArr[0][0]);
+    // model->inference(inputArr[0],inferOut);
+    // for(int i = 0;i < 1000;i++)
+    //     printf("%f ",inferOut[i]);
+    for (int i = 0; i < TESTNUM; i++)
+    {
+        float inferOut[1000];
+        for (int j = 0; j < ITERNUM; j++)
+        {
+            float Onetime;
+            cudaEvent_t start, stop;
+            cudaEventCreate(&start);
+            cudaEventCreate(&stop);
+            cudaEventRecord(start, 0);
 
-    //         // 执行Inference
-    //         inference(inputArr[i], inferOut);
+            // 执行Inference
+            inference(inputArr[i], inferOut);
 
-    //         cudaDeviceSynchronize();
-    //         cudaEventRecord(stop, 0);
-    //         cudaEventSynchronize(stop);
-    //         cudaEventElapsedTime(&Onetime, start, stop);
-    //         // 累加单次推理消耗时间
-    //         sumTime += Onetime;
-    //     }
-    //     checkOutput(benchOutArr[i], inferOut);
-    // }
+            cudaDeviceSynchronize();
+            cudaEventRecord(stop, 0);
+            cudaEventSynchronize(stop);
+            cudaEventElapsedTime(&Onetime, start, stop);
+            // 累加单次推理消耗时间
+            sumTime += Onetime;
+        }
+        checkOutput(benchOutArr[i], inferOut);
+    }
+    
     printf("Average Time is: %f\n", (sumTime / TESTNUM / ITERNUM));
+    delete model;
 }
