@@ -35,7 +35,7 @@
 
 * 代码效果:
   * 最终版本:
-  ![res1](pic/res1.jpg)
+  * ![res1](pic/res1.jpg)
   * 无shared_memory
-  ![res3](pic/res3.jpg)
+  * ![res3](pic/res3.jpg)
   
