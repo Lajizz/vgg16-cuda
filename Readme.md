@@ -32,7 +32,12 @@
   - [x] 模型编写-cuda
   - [x] 测试正确性
   - [x] 优化
-
+* 在服务器上执行：
+  ```bash
+  $ cd /home/group3/workspace/VGG
+  $ make
+  $ ./model.o
+  ```
 * 代码效果:
   * 最终版本:<br>
     ![res1](pic/res1.jpg)
